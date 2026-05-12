@@ -1,0 +1,79 @@
+# ============================================================================
+# Requisitos de Dependências - Classificador de Lesões de Pele
+# TensorFlow + Aceleração NVIDIA CUDA
+# ============================================================================
+
+# Deep Learning Framework
+# Versão com suporte NVIDIA CUDA/cuDNN
+tensorflow[and-cuda]==2.13.0
+
+# Data Processing
+numpy>=1.21.0
+pandas>=1.3.0
+
+# Computação Científica
+scikit-learn>=1.0.0
+scipy>=1.7.0
+
+# Visualização
+matplotlib>=3.4.0
+seaborn>=0.11.0
+
+# Image Processing
+Pillow>=8.3.0
+
+# Utilities
+tqdm>=4.62.0
+click>=8.0.0
+
+# Opcional: Monitoramento de Sistema
+psutil>=5.8.0
+
+# ============================================================================
+# NOTAS DE INSTALAÇÃO
+# ============================================================================
+#
+# 1. Criar ambiente virtual:
+#    python -m venv venv
+#    source venv/bin/activate  # Linux/Mac
+#    venv\Scripts\activate     # Windows
+#
+# 2. Upgrade pip:
+#    pip install --upgrade pip setuptools wheel
+#
+# 3. Instalar dependências:
+#    pip install -r requirements.txt
+#
+# 4. Verificar GPU:
+#    python validate_environment.py
+#
+# ============================================================================
+# REQUISITOS NVIDIA
+# ============================================================================
+#
+# Para aceleração GPU completa, instale:
+#
+# - NVIDIA Driver: Versão >= 470.x
+# - CUDA Toolkit: 11.8
+# - cuDNN: 8.6 ou superior
+#
+# Verificar instalação:
+# - nvidia-smi           (ver driver e GPU)
+# - nvcc --version       (ver CUDA)
+# - ldconfig -p | grep cudnn (ver cuDNN)
+#
+# ============================================================================
+# VERSÕES DO TENSORFLOW E COMPATIBILIDADE
+# ============================================================================
+#
+# TensorFlow 2.13.0:
+#   - Python: 3.8-3.12
+#   - CUDA: 11.8
+#   - cuDNN: 8.6+
+#   - GPU: NVIDIA with Compute Capability >= 3.5
+#
+# Alternativas:
+#   tensorflow>=2.10.0  (mais recente)
+#   tensorflow==2.11.0  (versão anterior)
+#
+# ============================================================================
