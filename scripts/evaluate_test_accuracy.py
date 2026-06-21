@@ -7,10 +7,10 @@ Uso:
     --ground-truth GroundTruth.csv \
     --predictions test.csv
 
-Por padrao, a classe positiva no GroundTruth e MEL. Use --positive-classes
-para ajustar o criterio, por exemplo:
+Por padrao, as classes positivas no GroundTruth sao MEL e BCC.
+Use --positive-classes para ajustar o criterio, por exemplo:
 
-  --positive-classes MEL,BCC,AKIEC
+    --positive-classes MEL,BCC,AKIEC
 """
 
 from __future__ import annotations
@@ -34,6 +34,13 @@ def parse_binary(value: str, threshold: float = 0.5) -> int:
         return 1 if float(text) >= threshold else 0
     except ValueError as exc:
         raise ValueError(f"Nao foi possivel interpretar valor binario: {value!r}") from exc
+
+
+def parse_positive_classes(raw: str) -> list[str]:
+    classes = [column.strip().upper() for column in raw.split(",") if column.strip()]
+    if not classes:
+        raise ValueError("Forneca ao menos uma classe positiva em --positive-classes")
+    return classes
 
 
 def load_ground_truth(path: Path, positive_classes: list[str]) -> dict[str, int]:
@@ -84,8 +91,8 @@ def main() -> int:
     parser.add_argument("--predictions", default="test.csv", help="CSV com as previsoes")
     parser.add_argument(
         "--positive-classes",
-        default="MEL, BCC",
-        help="Classes do GroundTruth que contam como positivas, separadas por virgula",
+        default="MEL,BCC",
+        help="Classes do GroundTruth que contam como positivas (padrao: MEL,BCC), separadas por virgula",
     )
     parser.add_argument(
         "--threshold",
@@ -97,10 +104,12 @@ def main() -> int:
 
     ground_truth_path = Path(args.ground_truth)
     predictions_path = Path(args.predictions)
-    positive_classes = [column.strip() for column in args.positive_classes.split(",") if column.strip()]
+    positive_classes = parse_positive_classes(args.positive_classes)
 
     ground_truth = load_ground_truth(ground_truth_path, positive_classes)
     predictions = load_predictions(predictions_path, args.threshold)
+
+    print(f"Classes positivas consideradas: {', '.join(positive_classes)}")
 
     common_ids = sorted(set(ground_truth) & set(predictions))
     missing_in_predictions = sorted(set(ground_truth) - set(predictions))

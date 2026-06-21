@@ -170,13 +170,15 @@ def main():
         mask_files = mask_files[:args.limit]
 
     for mpath in mask_files:
+        if not mpath.is_file():
+            continue
         base = mpath.stem
         img_path = find_matching_image(images_dir, base)
         if img_path is None: continue
         try:
             res = evaluate(img_path, mpath)
             rows.append(res)
-            (f"{res['image']}: score={res['score']} suspicious={res['suspicious']}")
+            print(f"{res['image']}: score={res['score']} suspicious={res['suspicious']}")
         except Exception as e:
             print(f"Erro ao processar {img_path} / {mpath}: {e}")
 

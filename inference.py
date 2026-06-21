@@ -185,7 +185,7 @@ class SkinLesionInference:
             print(f"  {idx+1}. {pred['class']:8} [{bar:50}] {pred['probability']:.4f} ({status})")
         
         print(f"\nTodas as Classes:")
-        for class_name in self['classes']:
+        for class_name in self.classes:
             prob = result['predictions'][class_name]['probability']
             predicted = result['predictions'][class_name]['predicted']
             status = '✓' if predicted else '✗'
