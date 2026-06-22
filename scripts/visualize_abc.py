@@ -31,14 +31,68 @@ def load_mask(mask_path, img_shape=None):
     return m
 
 
-def asymmetry_diff(mask):
-    # rotate 180 around center and compute difference within mask bbox
+def lesion_center_crop(mask, pad_scale=1.3):
     if mask is None:
         return None
-    rot = cv2.rotate(mask, cv2.ROTATE_180)
-    # difference heatmap (where mask and rotated differ)
-    diff = cv2.absdiff(mask, rot)
-    diff = diff.astype(float) / 255.0
+
+    ys, xs = np.where(mask > 0)
+    if len(xs) == 0:
+        return None
+
+    x_min, x_max = xs.min(), xs.max()
+    y_min, y_max = ys.min(), ys.max()
+
+    width = x_max - x_min + 1
+    height = y_max - y_min + 1
+
+    side = int(max(width, height) * pad_scale)
+    side = max(side, 1)
+
+    center_x = (x_min + x_max) // 2
+    center_y = (y_min + y_max) // 2
+
+    x0 = center_x - side // 2
+    y0 = center_y - side // 2
+    x1 = x0 + side
+    y1 = y0 + side
+
+    patch = np.zeros((side, side), dtype=mask.dtype)
+
+    src_x0 = max(0, x0)
+    src_y0 = max(0, y0)
+    src_x1 = min(mask.shape[1], x1)
+    src_y1 = min(mask.shape[0], y1)
+
+    if src_x0 >= src_x1 or src_y0 >= src_y1:
+        return None
+
+    dst_x0 = src_x0 - x0
+    dst_y0 = src_y0 - y0
+
+    patch[
+        dst_y0:dst_y0 + (src_y1 - src_y0),
+        dst_x0:dst_x0 + (src_x1 - src_x0)
+    ] = mask[src_y0:src_y1, src_x0:src_x1]
+
+    return patch, (x0, y0, x1, y1)
+
+
+def asymmetry_diff(mask):
+    crop_info = lesion_center_crop(mask)
+    if crop_info is None:
+        return None
+
+    patch, _ = crop_info
+
+    # Same operation used in asymmetry_score()
+    flipped = cv2.flip(patch, -1)
+
+    # Visualize disagreement between original and rotated lesion
+    diff = cv2.absdiff(
+        (patch > 0).astype(np.uint8) * 255,
+        (flipped > 0).astype(np.uint8) * 255
+    )
+
     return diff
 
 

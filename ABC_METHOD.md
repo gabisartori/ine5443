@@ -41,7 +41,7 @@ The code does the following:
 
 1. Finds the bounding box of the non-zero mask pixels.
 2. Expands that region into a square patch around the lesion.
-3. Rotates the patch by 180 degrees.
+3. Rotates the lesion-centered patch by 180 degrees.
 4. Computes the IoU between the original patch and the rotated patch.
 5. Converts that into asymmetry using:
 
@@ -56,6 +56,8 @@ More mismatch between the original and rotated lesion produces a score closer to
 
 In the visualization, this appears as the `Asymmetry diff (abs)` panel.
 White regions mark pixels that differ between the original lesion mask and the rotated mask.
+This comparison is done on the lesion-centered crop, not on the full image frame, so
+off-center crops do not inherit extra asymmetry from image placement.
 
 ## 4. B: Border Irregularity
 

@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 GROUND = 'GroundTruth.csv'
-PREDS = 'results_abc.csv'
+PREDS = 'results_abc_post_simetry_fix.csv'
 
 def normalize_image_id(name):
     # return basename without extension so it matches GroundTruth image IDs

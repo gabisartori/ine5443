@@ -28,34 +28,47 @@ def load_image(path):
     return im
 
 
-def asymmetry_score(mask):
-    # encontra bounding box da lesão
+def centered_square_crop(mask, pad_scale=1.3):
     ys, xs = np.where(mask > 0)
     if len(xs) == 0:
-        return 0.0
+        return None
+
     x_min, x_max = xs.min(), xs.max()
     y_min, y_max = ys.min(), ys.max()
-    w = x_max - x_min + 1
-    h = y_max - y_min + 1
-    side = int(max(w, h) * 1.3)
-    cx = (x_min + x_max) // 2
-    cy = (y_min + y_max) // 2
-    # crop square centered at centroid
-    x0 = max(0, cx - side // 2)
-    y0 = max(0, cy - side // 2)
+    width = x_max - x_min + 1
+    height = y_max - y_min + 1
+    side = int(max(width, height) * pad_scale)
+    side = max(side, 1)
+
+    center_x = (x_min + x_max) // 2
+    center_y = (y_min + y_max) // 2
+
+    x0 = center_x - side // 2
+    y0 = center_y - side // 2
     x1 = x0 + side
     y1 = y0 + side
-    # pad if necessary
-    pad_x = max(0, x1 - mask.shape[1])
-    pad_y = max(0, y1 - mask.shape[0])
-    patch = mask[y0:y1 - pad_y, x0:x1 - pad_x]
-    if patch.size == 0:
+
+    patch = np.zeros((side, side), dtype=mask.dtype)
+
+    src_x0 = max(0, x0)
+    src_y0 = max(0, y0)
+    src_x1 = min(mask.shape[1], x1)
+    src_y1 = min(mask.shape[0], y1)
+    if src_x0 >= src_x1 or src_y0 >= src_y1:
+        return None
+
+    dst_x0 = src_x0 - x0
+    dst_y0 = src_y0 - y0
+    patch[dst_y0:dst_y0 + (src_y1 - src_y0), dst_x0:dst_x0 + (src_x1 - src_x0)] = mask[src_y0:src_y1, src_x0:src_x1]
+    return patch
+
+
+def asymmetry_score(mask):
+    patch = centered_square_crop(mask)
+    if patch is None:
         return 0.0
     # flip 180 (equivalente a rota 180)
     flipped = cv2.flip(patch, -1)
-    # resize to same shape if pad made them differ
-    if flipped.shape != patch.shape:
-        flipped = cv2.resize(flipped, (patch.shape[1], patch.shape[0]), interpolation=cv2.INTER_NEAREST)
     inter = np.logical_and(patch > 0, flipped > 0).sum()
     union = np.logical_or(patch > 0, flipped > 0).sum()
     iou = inter / union if union > 0 else 1.0
