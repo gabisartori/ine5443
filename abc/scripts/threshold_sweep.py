@@ -42,7 +42,7 @@ def load_predictions(path):
     return preds
 
 def main():
-    positive_classes = ['MEL','BCC']
+    positive_classes = ['MEL','BCC', 'AKIEC']
     if not Path(GROUND).is_file():
         print('Ground truth file not found:', GROUND); sys.exit(1)
     if not Path(PREDS).is_file():
